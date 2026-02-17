@@ -41,28 +41,29 @@ def find_context(question, data):
         scored.append((score, chunk))
 
     scored.sort(reverse=True)
-    return "\n".join([c for s,c in scored[:3] if s>0])
+
+    top_chunks = [c for s,c in scored[:2] if s>0]
+
+    # Limit size
+    context = "\n".join(top_chunks)
+    return context[:3000]
+
 
 
 def ask_llm(question, context):
     llm = ChatGroq(
         api_key=GROQ_API_KEY,
-        model="mixtral-8x7b-32768"
+        model="llama3-8b-8192"
     )
 
-    prompt = f"""
-    Answer ONLY from the context.
-    If not found, say "Not in document".
+    messages = [
+        ("system", "Answer only from provided context."),
+        ("human", f"Context:\n{context}\n\nQuestion: {question}")
+    ]
 
-    Context:
-    {context}
-
-    Question:
-    {question}
-    """
-
-    res = llm.invoke(prompt)
+    res = llm.invoke(messages)
     return res.content
+
 
 
 # ========== SESSION STATE ==========
@@ -103,3 +104,4 @@ if st.session_state.pdf_data:
     for q,a in st.session_state.history:
         st.markdown(f"**🧑 You:** {q}")
         st.markdown(f"**🤖 Bot:** {a}")
+
