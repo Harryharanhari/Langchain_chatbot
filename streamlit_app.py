@@ -53,16 +53,17 @@ def find_context(question, data):
 def ask_llm(question, context):
     llm = ChatGroq(
         api_key=GROQ_API_KEY,
-        model="llama3-8b-8192"
+        model="llama-3.1-8b-instant"
     )
 
     messages = [
-        ("system", "Answer only from provided context."),
+        ("system", "Answer only from provided context. If not found, say 'Not in document'."),
         ("human", f"Context:\n{context}\n\nQuestion: {question}")
     ]
 
     res = llm.invoke(messages)
     return res.content
+
 
 
 
@@ -104,4 +105,5 @@ if st.session_state.pdf_data:
     for q,a in st.session_state.history:
         st.markdown(f"**🧑 You:** {q}")
         st.markdown(f"**🤖 Bot:** {a}")
+
 
